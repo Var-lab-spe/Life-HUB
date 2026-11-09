@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Hub - Life Planner & Tracker</title>
+    <!-- Web App Manifest for Native Installation -->
+    <link rel="manifest" href="data:application/manifest+json;utf8,%7B%22name%22%3A%22LifeHub%20Planner%22%2C%22short_name%22%3A%22LifeHub%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%232563eb%22%7D">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.6);
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
+    <div class="flex h-full overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 z-20 absolute md:relative h-full -translate-x-full md:translate-x-0">
+            <div>
+                <!-- App Logo/Header -->
+                <div class="p-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-700/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30">
+                            <i class="ph-bold ph-compass text-xl"></i>
+                        </div>
+                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">LifeHub</span>
+                    </div>
+                    <button id="closeSidebar" class="md:hidden text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                        <i class="ph-bold ph-x text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Nav Items -->
+                <nav class="p-4 space-y-1.5">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400">
+                        <i class="ph-bold ph-squares-four text-lg"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('tasks')" id="nav-tasks" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700/50">
+                        <i class="ph-bold ph-check-square text-lg"></i>
+                        <span>Task Planner</span>
+                    </button>
+                    <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700/50">
+                        <i class="ph-bold ph-chart-pie-slice text-lg"></i>
+                        <span>Time Analysis</span>
+                    </button>
+                    <button onclick="switchTab('habits')" id="nav-habits" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700/50">
+                        <i class="ph-bold ph-lightning text-lg"></i>
+                        <span>Habit Tracker</span>
+                    </button>
+                    <button onclick="switchTab('notes')" id="nav-notes" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700/50">
+                        <i class="ph-bold ph-book-open text-lg"></i>
+                        <span>Daily Journal</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
+                <!-- Native PWA Install Button (Visible when available) -->
+                <button id="installAppBtn" onclick="triggerPwaInstall()" class="hidden w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all">
+                    <span class="flex items-center space-x-3">
+                        <i class="ph-bold ph-download-simple text-lg"></i>
+                        <span>Install Desktop App</span>
+                    </span>
+                    <i class="ph-bold ph-caret-right"></i>
+                </button>
+
+                <button id="themeToggle" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                    <span class="flex items-center space-x-3">
+                        <i id="themeIcon" class="ph-bold ph-moon text-lg"></i>
+                        <span id="themeLabel">Dark Mode</span>
+                    </span>
+                </button>
+                <div class="flex items-center space-x-2 pt-1">
+                    <button onclick="exportData()" title="Backup Data to File" class="flex-1 flex items-center justify-center space-x-1 px-2.5 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50">
+                        <i class="ph-bold ph-download-simple text-sm"></i>
+                        <span>Export</span>
+                    </button>
+                    <button onclick="document.getElementById('importFileInput').click()" title="Restore Data from File" class="flex-1 flex items-center justify-center space-x-1 px-2.5 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50">
+                        <i class="ph-bold ph-upload-simple text-sm"></i>
+                        <span>Import</span>
+                    </button>
+                    <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <!-- Top Mobile Bar -->
+            <header class="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                <button id="openSidebar" class="p-2 text-slate-600 dark:text-slate-300">
+                    <i class="ph-bold ph-list text-2xl"></i>
+                </button>
+                <span class="font-bold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">LifeHub</span>
+                <div class="w-8"></div> <!-- spacer -->
+            </header>
+
+            <!-- Scrollable View Container -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+
+                <!-- DASHBOARD VIEW -->
+                <section id="view-dashboard" class="space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl md:text-3xl font-bold">Welcome Back! 👋</h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1" id="dashDate"></p>
+                        </div>
+                    </div>
+
+                    <!-- Summary Stats Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm flex items-center space-x-4">
+                            <div class="p-3 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl">
+                                <i class="ph-bold ph-clock-afternoon text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Due Today / Overdue</p>
+                                <h3 id="stat-due-today" class="text-2xl font-bold mt-0.5">0</h3>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm flex items-center space-x-4">
+                            <div class="p-3 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                                <i class="ph-bold ph-timer text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Time Spent</p>
+                                <h3 id="stat-total-time" class="text-2xl font-bold mt-0.5">0m</h3>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm flex items-center space-x-4">
+                            <div class="p-3 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                                <i class="ph-bold ph-lightning text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Habits Done Today</p>
+                                <h3 id="stat-habits" class="text-2xl font-bold mt-0.5">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Content Split -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Time-Bound Priorities / Upcoming Deadlines -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-lg flex items-center space-x-2">
+                                    <i class="ph-bold ph-alarm text-rose-500"></i>
+                                    <span>Upcoming Deadlines</span>
+                                </h3>
+                                <button onclick="switchTab('tasks')" class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">View Tasks</button>
+                            </div>
+                            <div id="dash-upcoming-list" class="space-y-2">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Today's Habits Progress -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-lg flex items-center space-x-2">
+                                    <i class="ph-bold ph-target text-emerald-500"></i>
+                                    <span>Habits Today</span>
+                                </h3>
+                                <button onclick="switchTab('habits')" class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">Manage</button>
+                            </div>
+                            <div id="dash-habit-list" class="space-y-2">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TASKS VIEW -->
+                <section id="view-tasks" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold">Task Planner</h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Organize time-sensitive tasks, categories, and timers</p>
+                        </div>
+                        <button onclick="toggleModal('task-modal', true)" class="flex items-center justify-center space-x-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 transition-all text-sm">
+                            <i class="ph-bold ph-plus"></i>
+                            <span>New Task</span>
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <div class="flex space-x-2 overflow-x-auto pb-1 sm:pb-0">
+                            <button onclick="setTaskFilter('all')" id="filter-task-all" class="task-filter-btn px-4 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">All</button>
+                            <button onclick="setTaskFilter('pending')" id="filter-task-pending" class="task-filter-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Pending</button>
+                            <button onclick="setTaskFilter('overdue')" id="filter-task-overdue" class="task-filter-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Overdue</button>
+                            <button onclick="setTaskFilter('completed')" id="filter-task-completed" class="task-filter-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Completed</button>
+                        </div>
+                        <button onclick="toggleSortDueDate()" id="sort-task-btn" class="flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <i class="ph-bold ph-sort-ascending text-sm"></i>
+                            <span>Sort by Due Date</span>
+                        </button>
+                    </div>
+
+                    <!-- Task List -->
+                    <div id="full-task-list" class="space-y-3">
+                        <!-- Tasks dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- TIME & TASK ANALYSIS VIEW -->
+                <section id="view-analytics" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold">Time & Task Analysis Report</h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Gain insights into how your time is spent across task categories</p>
+                        </div>
+                        <!-- Date Filter Buttons -->
+                        <div class="flex flex-wrap space-x-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 self-start sm:self-auto">
+                            <button onclick="setAnalyticsTimeframe('all')" id="analytics-filter-all" class="analytics-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all">All Time</button>
+                            <button onclick="setAnalyticsTimeframe('week')" id="analytics-filter-week" class="analytics-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all">This Week</button>
+                            <button onclick="setAnalyticsTimeframe('month')" id="analytics-filter-month" class="analytics-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400 transition-all">This Month</button>
+                            <button onclick="setAnalyticsTimeframe('last-month')" id="analytics-filter-last-month" class="analytics-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all">Last Month</button>
+                            <button onclick="setAnalyticsTimeframe('prev2-month')" id="analytics-filter-prev2-month" class="analytics-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all">2 Months Ago</button>
+                        </div>
+                    </div>
+
+                    <!-- Insights Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm">
+                            <span class="text-xs text-slate-400 uppercase font-semibold">Total Time Logged</span>
+                            <div class="text-2xl font-bold mt-1 text-blue-600 dark:text-blue-400" id="report-total-time">0 mins</div>
+                            <p class="text-xs text-slate-400 mt-1">Across all task categories</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm">
+                            <span class="text-xs text-slate-400 uppercase font-semibold">Top Focus Category</span>
+                            <div class="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400" id="report-top-category">None</div>
+                            <p class="text-xs text-slate-400 mt-1">Most time spent</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm">
+                            <span class="text-xs text-slate-400 uppercase font-semibold">Completion Rate</span>
+                            <div class="text-2xl font-bold mt-1 text-purple-600 dark:text-purple-400" id="report-completion-rate">0%</div>
+                            <p class="text-xs text-slate-400 mt-1" id="report-completion-count">0 of 0 tasks completed</p>
+                        </div>
+                    </div>
+
+                    <!-- Time Distribution & Averages -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Category Breakdown -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm space-y-4">
+                            <h3 class="font-bold text-lg flex items-center space-x-2">
+                                <i class="ph-bold ph-chart-bar text-blue-500"></i>
+                                <span>Time Spent by Category</span>
+                            </h3>
+                            <div id="report-category-bars" class="space-y-4">
+                                <!-- Bars rendered dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Category Average Duration Table -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-sm space-y-4">
+                            <h3 class="font-bold text-lg flex items-center space-x-2">
+                                <i class="ph-bold ph-clock text-indigo-500"></i>
+                                <span>Average Time per Task</span>
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-slate-400 uppercase bg-slate-50 dark:bg-slate-900/50">
+                                        <tr>
+                                            <th class="px-3 py-2 rounded-l-lg">Category</th>
+                                            <th class="px-3 py-2">Tasks</th>
+                                            <th class="px-3 py-2">Total Time</th>
+                                            <th class="px-3 py-2 rounded-r-lg">Avg / Task</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="report-category-table" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                        <!-- Table content dynamically generated -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- HABITS VIEW -->
+                <section id="view-habits" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold">Habit Tracker</h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Build positive daily routines scheduled by time slots</p>
+                        </div>
+                        <button onclick="toggleModal('habit-modal', true)" class="flex items-center justify-center space-x-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 transition-all text-sm">
+                            <i class="ph-bold ph-plus"></i>
+                            <span>New Habit</span>
+                        </button>
+                    </div>
+
+                    <div id="full-habit-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Habits dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- JOURNAL/NOTES VIEW -->
+                <section id="view-notes" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold">Daily Journal & Notes</h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Capture time-stamped thoughts, ideas, and reflections</p>
+                        </div>
+                        <button onclick="toggleModal('note-modal', true)" class="flex items-center justify-center space-x-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 transition-all text-sm">
+                            <i class="ph-bold ph-pencil-simple"></i>
+                            <span>New Note</span>
+                        </button>
+                    </div>
+
+                    <div id="full-note-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Notes dynamically populated -->
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg">Add New Task</h3>
+                <button onclick="toggleModal('task-modal', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <form id="task-form" onsubmit="handleAddTask(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Task Title</label>
+                    <input type="text" id="task-title" required placeholder="e.g., Submit project proposal" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Category</label>
+                        <select id="task-category" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <option value="Work" selected>Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Study">Study</option>
+                            <option value="Fitness">Fitness</option>
+                            <option value="Creative">Creative</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Estimated Mins</label>
+                        <input type="number" id="task-estimated-time" min="0" placeholder="30" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Due Date</label>
+                        <input type="date" id="task-duedate" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Due Time</label>
+                        <input type="time" id="task-duetime" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Priority</label>
+                    <select id="task-priority" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <option value="low">Low Priority</option>
+                        <option value="medium" selected>Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="toggleModal('task-modal', false)" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Habit Modal -->
+    <div id="habit-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg">Create Habit</h3>
+                <button onclick="toggleModal('habit-modal', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <form id="habit-form" onsubmit="handleAddHabit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Habit Name</label>
+                    <input type="text" id="habit-title" required placeholder="e.g., Read for 20 mins" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Time Slot</label>
+                        <select id="habit-timeslot" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <option value="Anytime">Anytime</option>
+                            <option value="Morning">Morning</option>
+                            <option value="Afternoon">Afternoon</option>
+                            <option value="Evening">Evening</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Frequency</label>
+                        <input type="text" id="habit-freq" placeholder="Daily" value="Daily" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="toggleModal('habit-modal', false)" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md">Add Habit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div id="note-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg">New Journal Entry</h3>
+                <button onclick="toggleModal('note-modal', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <form id="note-form" onsubmit="handleAddNote(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Title</label>
+                    <input type="text" id="note-title" required placeholder="Entry title..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Date Context</label>
+                        <input type="date" id="note-date" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Time Context</label>
+                        <input type="time" id="note-time" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Body</label>
+                    <textarea id="note-body" rows="4" required placeholder="Write your thoughts here..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="toggleModal('note-modal', false)" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCRIPT -->
+    <script>
+        // Default today string helpers
+        const getTodayIsoDate = () => new Date().toISOString().split('T')[0];
+        const getNowTimeStr = () => new Date().toTimeString().slice(0, 5);
+
+        // PWA Install Prompt Handler
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('installAppBtn');
+            if (installBtn) installBtn.classList.remove('hidden');
+        });
+
+        function triggerPwaInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('installAppBtn').classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert("To add this shortcut on Windows/Mac:\n1. Open your saved LifeHub.html file in Chrome or Edge.\n2. Click the 3 dots menu (⋮) at the top right.\n3. Click 'Save and share' -> 'Install LifeHub Planner' (or 'Create Shortcut' and check 'Open as window').");
+            }
+        }
+
+        // Active timers state
+        let timerIntervals = {};
+<!-- ... existing code -->
